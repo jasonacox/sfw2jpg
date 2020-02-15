@@ -1,0 +1,129 @@
+#
+# usage.txt
+# 
+# Copyright (c) 1997-1999  Everett Lipman
+#
+# This document is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This document is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# The GNU General Public License is available at
+#
+#    http://www.fsf.org/copyleft/gpl.html
+#
+# Alternatively, you can write to the 
+#
+#    Free Software Foundation, Inc.
+#    59 Temple Place - Suite 330
+#    Boston, MA  02111-1307, USA
+#
+
+#
+# 9 May 1999
+#
+
+This file describes the usage of the programs sfwjpg, pwpjpg,
+pwpext, and the Independent JPEG Group's jpegtran.
+
+
+Limitations:
+
+  The programs sfwjpg and pwpjpg convert from Seattle
+  FilmWorks's private file formats to JFIF (JPEG File Interchange
+  Format).  As far as I am aware, Seattle FilmWorks does not
+  make public the specifications of these formats.  The format
+  specifications were deduced by examining a number of
+  .sfw and .pwp files, and may not be entirely accurate.  In
+  particular, some .sfw files which were downloaded from the SFW
+  web site were not properly converted to JFIF.  All .pwp files
+  which were downloaded from SFW and tried have been converted
+  without any problems.
+
+  Converted images will need to be flipped vertically.  This can
+  be done with jpegtran.  The jpegtran program is part of the
+  Independent JPEG Group's free software, which can be obtained
+  from
+
+  ftp://ftp.uu.net/graphics/jpeg 
+
+  pwpext is a UNIX (Bourne) shell script, and will not work unless
+  pwpjpg and jpegtran are in the execution search path ($PATH) when
+  it is invoked.
+
+
+sfwjpg
+
+  sfwjpg will take a single .sfw file and convert it into a
+  .jpg (JFIF) file.  The image in the newly created .jpg file
+  will then need to be flipped vertically.  sfwjpg takes one or
+  two arguments, the name of the .sfw file to be converted, and
+  an optional output file:
+
+  sfwjpg mypic.sfw
+
+  This will create the file mypic.jpg in the current directory.
+  mypic.sfw will not be altered or removed.  Under Microsoft
+  Windows, sfwjpg.exe must be invoked from the run window
+  command line.
+
+  sfwjpg mypic.sfw foo.jpg
+
+  This will convert mypic.sfw and leave the result in foo.jpg.
+
+  sfwjpg mypic.sfw -
+
+  This will convert mypic.sfw and write the result to the standard
+  output.
+
+
+pwpjpg
+
+  pwpjpg will take a .pwp file and extract the images in the
+  file.  A .pwp file typically contains the scanned images from
+  an entire roll of film.  The names of the images are contained
+  within the .pwp file.  pwpjpg takes a single argument, the
+  name of the .pwp file from which to extract the images:
+
+  pwpjpg mypics.pwp
+
+  This will extract all of the images contained in mypics.pwp
+  and write them in the current directory as .jpg (JFIF) files.
+  The file names will correspond to the names of the images
+  stored in the .pwp file.  mypics.pwp will not be altered or
+  removed.  Under Microsoft Windows, pwpjpg.exe must be invoked
+  from the run window command line.
+
+
+pwpext
+
+  pwpext is a UNIX (Bourne) shell script which extracts and
+  flips the images from a .pwp file.  It takes a single
+  argument, the name of the .pwp file:
+
+  pwpext mypics.pwp
+
+  This will extract, flip, and store as .jpg files all of the
+  images contained in mypics.pwp.  mypics.pwp will not be
+  altered or removed.
+
+
+jpegtran
+
+  jpegtran will do a lossless vertical inversion of the image in
+  a .jpg file.  This is a complicated process which is described
+  in details.txt.  jpegtran can use use standard input and output:
+
+  jpegtran -flip vertical < mypic.jpg > myflippedpic.jpg
+
+  This will create the file myflippedpic.jpg, which will contain
+  the same image as mypic.jpg, except that the vertical ordering
+  of the scan lines will be reversed in myflippedpic.jpg.  This
+  flipping can be done by most image processing programs, though
+  usually not without some gain in file size and/or loss in
+  image quality.

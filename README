@@ -1,0 +1,226 @@
+#
+# details.txt
+# 
+# Copyright (c) 1997-1999  Everett Lipman
+#
+# This document is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+# 
+# This document is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# The GNU General Public License is available at
+#
+#    http://www.fsf.org/copyleft/gpl.html
+#
+# Alternatively, you can write to the 
+#
+#    Free Software Foundation, Inc.
+#    59 Temple Place - Suite 330
+#    Boston, MA  02111-1307, USA
+#
+
+#
+# 9 May 1999
+#
+
+This file contains instructions for the compilation of, and
+information about the function of, the programs sfwjpg, pwpjpg, and
+flipjpeg.
+
+NOTE: The Independent JPEG group's jpegtran program now performs
+      the function of flipjpeg, which was written before the present
+      version of jpegtran became available.
+
+      Seattle FilmWorks recently began scanning pictures at
+      resolutions other than 640x480.  This change affects all
+      resolutions referred to throughout this document.
+
+
+Compilation:
+
+  sfwjpg and pwpjpg
+
+    sfwjpg.c and pwpjpg.c are standalone ANSI C programs which should
+    compile without any modifications under UNIX.  Compilation under
+    Windows with Microsoft Visual C++ requires that the strcasecmp()
+    function, which occurs in both programs, be replaced with
+    strcmp().
+
+  flipjpeg - See NOTE above
+
+    flipjpeg.c is an ANSI C program which uses the Independent JPEG
+    Group's (IJG) free JPEG software, which you can find at
+    ftp://ftp.uu.net/graphics/jpeg.  flipjpeg.c uses standard input
+    and output, and has only been tested under UNIX.  It is probably
+    possible to compile flipjpeg.c on another platform with a few
+    modifications, such as changing the input and output files.  See
+    the IJG software documentation for more information.
+
+    In order to compile flipjpeg.c under UNIX, unpack the IJG
+    software and place flipjpeg.c in the same directory.  After
+    running 'configure' to create the Makefile for the IJG software,
+    add the following lines to Makefile:
+
+    FJOBJECTS= flipjpeg.o rdswitch.o cdjpeg.o
+
+    flipjpeg: $(FJOBJECTS) libjpeg.a
+        $(LN) $(LDFLAGS) -o flipjpeg $(FJOBJECTS) libjpeg.a $(LDLIBS)
+
+    then type
+
+      make flipjpeg
+
+
+
+Program Operation
+
+  This section contains a technical description of the function of
+  sfwjpg, pwpjpg, and flipjpeg.  If you need more information about
+  JPEG compression or the JFIF file format, you can consult
+
+  THE JPEG STILL IMAGE DATA COMPRESSION STANDARD
+  by William Pennebaker and Joan Mitchell
+  Van Nostrand Reinhold, 1993
+
+  The information presented here about .sfw files has been deduced
+  through examination of a number of example files, and may not be
+  complete.  None of this information has been supplied or confirmed
+  by Seattle FilmWorks.
+
+  sfwjpg
+
+    sfwjpg converts a file in the .sfw format to the standard JPEG
+    File Interchange Format (JFIF).  This is not terribly difficult,
+    since a .sfw file is really a JFIF file with a few
+    modifications.  Here are the steps in the conversion, as
+    performed by sfwjpg:
+
+    1.  Find the start of the JFIF data.
+        In a .sfw file, this is delineated by the four byte
+        sequence
+
+        0xff 0xc8 0xff 0xd0
+
+        this sequence must be changed to 
+
+        0xff 0xd8 0xff 0xe0
+
+        These four bytes become the start of the JFIF (.jpg) file,
+        all prior data having been discarded.
+
+    2.  Place JFIF identifier in the proper place.
+        The following 7 byte string must appear after the first six
+        bytes, which are the 4 initial bytes from step 1, plus two
+        others, which indicate the length of the data preceding
+        the next marker:
+
+        "JFIF\0\001\0"  Note: no implicit trailing null in this string.
+
+    3.  Fix the other JPEG markers in the file.
+        Two byte sequences beginning with 0xff, such as those in
+        step 1, are called markers, and indicate what type
+        of data follows in the JPEG stream or JFIF file.  In the
+        .sfw file, the following markers must be converted back
+        to those specified in the JPEG standard.  The .sfw
+        markers are on the left, and the corresponding JPEG
+        markers are on the right:
+
+        0xff 0xa0  ->  0xff 0xc0
+        0xff 0xa4  ->  0xff 0xc4
+        0xff 0xc8  ->  0xff 0xd8   (done in step 1)
+        0xff 0xc9  ->  0xff 0xd9
+        0xff 0xca  ->  0xff 0xda
+        0xff 0xcb  ->  0xff 0xdb
+        0xff 0xd0  ->  0xff 0xe0   (done in step 1)
+
+    4.  Remove trailing data after the 0xff 0xd9 (0xc9 before correction)
+        marker near the end of the file.
+    
+    5.  Insert the Huffman coding table if it is not present in the
+        .sfw file.  This table, along with its marker, can be found in
+        sfwjpg.c.  The table should be inserted just before the
+        0xff 0xda (0xca before correction) marker.
+
+    Once these steps have been carried out, you will have a JFIF file
+    containing your image.  The image will still need to be flipped
+    vertically.
+
+  pwpjpg
+  
+    A .pwp file consists of a group of .sfw files (typically all of
+    the pictures from a roll of film) which have had some additional
+    information prepended to them (such as the file name and length).
+    pwpjpg reads the length and file name information, and then passes
+    each .sfw file to the same routine used in sfwjpg, which converts
+    the file to JFIF and writes it to disk.
+
+    The beginning of the first filename is located at byte 0x14 in the
+    .pwp file, with byte 0x00 being the first byte in the file.  The
+    start of the .sfw file corresponding to that filename can be
+    found by searching for "SFW94A".  The length of the .sfw file is
+    stored in little-endian order.  If the char pointer pwpptr
+    points to the start of the "SFW94A" string, the three bytes
+    of the file length can be found at pwpptr-0x0A, pwpptr-0x0B,
+    and pwpptr-0x0C.  The byte at pwpptr-0x0A is the most
+    significant.  The next filename begins right after the end
+    of the previous .sfw file.  See the pwpjpg.c code for
+    further details.
+
+  flipjpeg
+
+    flipjpeg does a lossless inversion of the image in a JFIF file.
+
+    The JPEG compression process consists of a number of steps.
+    My (probably incomplete and possibly incorrect) understanding 
+    of this process is as follows:
+
+    1.  The image to be compressed is converted to a
+        representation using the desired components, for
+        example, Y, Cb and Cr instead of R, G and B.
+
+    2.  Each component is broken up into 8x8 pixel blocks, and
+        a two dimensional discrete cosine transform (DCT) is
+        performed on each block of pixels.  Sometimes at this
+        stage, various components are reduced in resolution.  In
+        .sfw files, the Y component is kept at 640x480, and the
+        Cb and Cr components are reduced to 320x240.
+
+    4.  The DCT coefficients are "quantized" (reduced in numerical,
+        not spatial, resolution) in order to reduce the amount of
+        information in the image in such a way that the appearance
+        of the image will not be noticeably affected.
+ 
+    5.  The zero frequency coefficients for each block are written
+        so that they represent the change in the coefficient from the
+        previous block instead of the actual value of the coefficient.
+
+    6.  The coefficients are compressed using Huffman coding, and the
+        resulting data are written out along with some markers to
+        delineate coding tables, etc.
+
+    In order to do a lossless inversion, flipjpeg operates on raw DCT
+    coefficients.  First, it uses the Independent JPEG Group's
+    (excellent) software to read the DCT coefficients for each
+    component into an array.  It then goes through each array,
+    flipping the sign of every DCT coefficient which corresponds to a
+    basis function that is asymmetric in the vertical direction.
+    This operation has the effect of vertically flipping each of the
+    8 pixel high horizontal stripes in the image.  The coefficient
+    block rows are finally rearranged in the proper order, and the
+    file is written out, again using the IJG software.
+
+    This procedure works fine on .sfw-derived JPEG files, since
+    Seattle FilmWorks scans images at 640x480 resolution, and 480
+    happens to be a multiple of 16.  When the image height is not a
+    multiple of 8, the remaining pixel rows in the last block are
+    filled with the same values as the last row in the image.  If the
+    components of the image are not sampled at the same resolution
+    (and perhaps sometimes even if they are) the different components
+    will be offset from each other in the flipped image.  This can be
+    seen if flipjpeg is run on testimg.jpg from the IJG software
+    distribution.
