@@ -1,14 +1,14 @@
-#SFW to JPG
+# SFW to JPG
 
-##Description
+## Description
 This project's programs 'sfwjpg' and 'pwpjpg' convert from Seattle
   FilmWorks's private file formats to JFIF (JPEG File Interchange
   Format).  
 
-##Credit
+## Credit
 Copyright (c) 1997-1999  Everett Lipman
 
-##Build Instructions
+## Build Instructions
 
     sfwjpg.c and pwpjpg.c are standalone ANSI C programs which should
     compile without any modifications under UNIX.  Compilation under
@@ -16,16 +16,16 @@ Copyright (c) 1997-1999  Everett Lipman
     function, which occurs in both programs, be replaced with
     strcmp().
 
-###Build using Makefile
+### Build using Makefile
 ```bash
 make
 cc -o pwpjpg pwpjpg.c
 cc -o sfwjpg sfwjpg.c
 ```
 
-##Usage
+## Usage
 
-####sfwjpg - Convert images in SFW file to JPG
+#### sfwjpg - Convert images in SFW file to JPG
 
   sfwjpg will take a single .sfw file and convert it into a
   .jpg (JFIF) file.  The image in the newly created .jpg file
@@ -53,7 +53,7 @@ cc -o sfwjpg sfwjpg.c
   This will convert mypic.sfw and write the result to the standard
   output.
 
-####pwpjpg - Extract images from PWP File
+#### pwpjpg - Extract images from PWP File
 
   pwpjpg will take a .pwp file and extract the images in the
   file.  A .pwp file typically contains the scanned images from
@@ -73,7 +73,7 @@ cc -o sfwjpg sfwjpg.c
   from the run window command line.
 
 
-###pwpext - Extracts and flips images in a PWP File
+### pwpext - Extracts and flips images in a PWP File
 
   pwpext is a UNIX (Bourne) shell script which extracts and
   flips the images from a .pwp file.  It takes a single
