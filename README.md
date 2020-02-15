@@ -1,7 +1,7 @@
 # SFW to JPG
 
 ## Description
-Thie programs `sfwjpg` and `pwpjpg` convert from Seattle
+The programs `sfwjpg` and `pwpjpg` convert from Seattle
 FilmWorks's private file formats to JFIF (JPEG File Interchange
 Format).  
 
