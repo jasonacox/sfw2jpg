@@ -23,6 +23,8 @@ cc -o pwpjpg pwpjpg.c
 cc -o sfwjpg sfwjpg.c
 ```
 
+Testing: An `example.sfw` file is included in this repo.  You can run `make test` to build the jpg version.
+
 ## Usage
 
 #### sfwjpg - Convert images in SFW file to JPG
@@ -109,6 +111,5 @@ flipjpeg: $(FJOBJECTS) libjpeg.a
 * Uploaded to Github with updated documentation and Makefiles - Jason Cox @jasonacox https://github.com/jasonacox/sfw2jpg
 
 ## References
-* Seattle FilmWorks - https://en.wikipedia.org/wiki/Seattle_FilmWorks
-* SFW93A format and conversion details
- - https://jonesrh.info/sfw/sfw_sfw93a_details.html 
+* Seattle FilmWorks: https://en.wikipedia.org/wiki/Seattle_FilmWorks
+* SFW93A format and conversion details: https://jonesrh.info/sfw/sfw_sfw93a_details.html 
