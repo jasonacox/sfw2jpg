@@ -1,0 +1,12 @@
+language: c
+
+compiler:
+  - gcc
+
+# Build steps
+script: 
+  - make
+  - make test
+
+
+
