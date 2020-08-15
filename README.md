@@ -1,5 +1,7 @@
 # SFW to JPG
 
+[![Build Status](https://travis-ci.org/jasonacox/sfw2jpg.svg?branch=master)](https://travis-ci.org/jasonacox/sfw2jpg)
+
 ## Description
 This project provides tools to convert Seattle FilmWorks (SFW) image formats to JPEG.
 
