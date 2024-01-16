@@ -1,12 +1,22 @@
-# NOTICE
+# autosfw2jpg
 
-Do not run this script without first editing the VARIABLES in the first lines. This is set up for DeanGadberry's linux device. Please reach out if you would like easier configuration.
+A bash script which converts and copies all `.sfw` image files from a seattle film works CDROM.
 
-## autosfw2jpg
+Author: Dean Gadberry https://github.com/DeanGadberry
 
-A bash script which converts and copies .sfw files from a seattle film works cdrom.
+## Setup
+
+Do not run this script without first editing the VARIABLES in the first lines. 
+
+* BLOCK_DEVICE - Device for CDROM (e.g. /dev/sr0)
+* DISK - Mount location of CDROM (e.g. /mnt/cdrom)
+* DESTINATION - Destination path name (e.g. /home/user/pictures)
 
 ## Arguments
+
+```bash
+./autosfw2jpg {roll_number} {date_prefix}
+```
 
 + $1 ROLL_NUMBER 
 + $2 DATE (this will prepend file names)
