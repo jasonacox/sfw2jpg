@@ -60,14 +60,16 @@ udisksctl unmount -b $BLOCK_DEVICE
 # Convert if needed
 #
 for x in $TEMPORARY_FOLDER/*; do
+    filename=${x##*/}
+    final_file=$TEMPORARY_FOLDER/ready/$PICTURE_DATE${filename%.*}
     if [ -d $x ]; then
         break
     fi
     if [[ $file_extension == sfw ]]; then
         sfwjpg $x
-        jpegtran -flip vertical $x > $TEMPORARY_FOLDER/ready/$PICTURE_DATE$(basename $x)
+        jpegtran -flip vertical ${x%.*}.jpg > $final_file.jpg
     elif [[ $file_extension == jpg ]]; then
-        mv $x $TEMPORARY_FOLDER/ready/$PICTURE_DATE$(basename $x)
+        mv $x $final_file.jpg
     fi
 done
 
