@@ -1,11 +1,24 @@
 #!/bin/bash
+#
+# A tool to help convert and copy all .sfw image files from a Seattle Film Works CDROM.
+#
+# Author: Dean Gadberry https://github.com/DeanGadberry
+# Date: 15 January 2024
+#
+# For more information see https://github.com/jasonacox/sfw2jpg
+#
+# Usage: ./autosfw2jpg {roll_number} {date_prefix}
+#
 
 ROLL_NUMBER=$1
 PICTURE_DATE=$2
 
+# Configuration Settings - Update these to match your setup
 BLOCK_DEVICE=/dev/sr0
-DISK=/media/dean/$ROLL_NUMBER
-DESTINATION=/media/dean/CRUZER64
+DISK=/mnt/cdrom/$ROLL_NUMBER
+DESTINATION=/home/user/pictures
+
+# Temporary File Location
 TEMPORARY_FOLDER=/tmp/temporary_folder_sfw2jpg
 READY_FOLDER=$TEMPORARY_FOLDER/ready
 
