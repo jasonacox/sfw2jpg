@@ -111,9 +111,14 @@ if (argc == 1)
 
 /*** make input and output filenames *********************************/
 
-strncpy(infilename,argv[1],255);
-namelen = strlen(infilename);
-if ( strcasecmp(infilename+(namelen-4), ".pwp") != 0 )
+namelen = strlen(argv[1]);
+if (namelen > 250)
+   {
+   fprintf(stderr,"\nInput filename too long (max 250 characters).\n\n");
+   exit(1);
+   }
+strcpy(infilename,argv[1]);
+if ( (namelen < 4) || strcasecmp(infilename+(namelen-4), ".pwp") != 0 )
    {
    strcat(infilename, ".pwp");
    namelen += 4;
@@ -124,7 +129,7 @@ if ( strcasecmp(infilename+(namelen-4), ".pwp") != 0 )
 retval = stat(infilename,&filestat);
 if (retval == -1)
    {
-   sprintf(mesg,"Error getting status for file '%s'",infilename);
+   snprintf(mesg,sizeof(mesg),"Error getting status for file '%s'",infilename);
    fprintf(stderr,"\n");
    perror(mesg);
    fprintf(stderr,"\n");
@@ -144,7 +149,7 @@ fileend = (USCH *) (filebuf + filestat.st_size - 1);
 infile = fopen(infilename,"rb");
 if (infile == NULL)
    {
-   sprintf(mesg,"Error opening file '%s'",infilename);
+   snprintf(mesg,sizeof(mesg),"Error opening file '%s'",infilename);
    fprintf(stderr,"\n");
    perror(mesg);
    fprintf(stderr,"\n");
@@ -154,7 +159,7 @@ if (infile == NULL)
 sretval = fread(filebuf, filestat.st_size, 1, infile);
 if (sretval == 0)
    {
-   sprintf(mesg,"Error reading file '%s'",infilename);
+   snprintf(mesg,sizeof(mesg),"Error reading file '%s'",infilename);
    fprintf(stderr,"\n");
    perror(mesg);
    fprintf(stderr,"\n");
@@ -177,7 +182,7 @@ if (forward_scan(pwpptr, fileend, dotsfw, 4) == NULL)
 if ((nameptr = forward_scan(pwpptr, fileend, dotsfw, 4)) == NULL)
    {
    fprintf(stderr,"\n");
-   sprintf(mesg,"Error parsing %s.  File format may have changed.\n",
+   snprintf(mesg,sizeof(mesg),"Error parsing %s.  File format may have changed.\n",
            infilename);
    fprintf(stderr,"%s",mesg);
    fprintf(stderr,"\n");
@@ -186,7 +191,7 @@ if ((nameptr = forward_scan(pwpptr, fileend, dotsfw, 4)) == NULL)
 if (nameptr-pwpptr > MAXFILENAME)
    {
    fprintf(stderr,"\n");
-   sprintf(mesg,"Error parsing %s.  Is this really a .pwp file?\n",
+   snprintf(mesg,sizeof(mesg),"Error parsing %s.  Is this really a .pwp file?\n",
            infilename);
    fprintf(stderr,"%s",mesg);
    fprintf(stderr,"\n");
@@ -197,6 +202,12 @@ if (nameptr-pwpptr > MAXFILENAME)
 
 while ( (nameptr = forward_scan(pwpptr, fileend, dotsfw, 4)) != NULL )
    {
+   if (nameptr-pwpptr > MAXFILENAME)
+      {
+      fprintf(stderr,"\nError parsing %s.  Embedded filename too long.\n\n",
+              infilename);
+      exit(1);
+      }
    for (i=0; i<(nameptr-pwpptr); i++) 
       outfilename[i] = pwpptr[i];
    outfilename[i] = '.';
@@ -219,6 +230,11 @@ while ( (nameptr = forward_scan(pwpptr, fileend, dotsfw, 4)) != NULL )
    b2 = (long) *(pwpptr-11); 
    b3 = (long) *(pwpptr-12); 
    sfwsize = 65536*b1 + 256*b2 + b3;
+   if ((sfwsize <= 0) || (sfwsize > (fileend - pwpptr) + 1))
+      {
+      fprintf(stderr, "Embedded SFW size %ld exceeds file.  Exiting.\n\n", sfwsize);
+      exit(1);
+      }
 
    retval = sfw_to_jfif(pwpptr, pwpptr+sfwsize-1, outfilename);
    if (retval != 0)
@@ -265,6 +281,11 @@ scanbuf[2] = 0xff;
 scanbuf[3] = 0xd0;
 headerstart = forward_scan(sfwstart, sfwend, scanbuf, 4);
 if (headerstart == NULL) return(-1);
+if (sfwend - headerstart < 13)
+   {
+   fprintf(stderr,"Truncated SFW header.\n\n");
+   return(-1);
+   }
 
 /*** fix SOI and APP0 tags ***/
 
@@ -293,6 +314,12 @@ bufpos += read_skip_length(bufpos);
 
 while (!dataflag)
    {
+   /*** marker and 2-byte length must lie inside the buffer ***/
+   if (sfwend - bufpos < 3)
+      {
+      fprintf(stderr,"Unexpected end of SFW data while reading markers.\n\n");
+      return(-1);
+      }
    retval = fix_marker(bufpos);
    if (retval == -1) return(-1);
    if (retval == (int)0xc4) huffmanflag = 1;
@@ -326,7 +353,7 @@ else
 if (outfile == NULL)
    {
    if (filename[0] == '\0') strcpy(filename, "standard output");
-   sprintf(mesg,"Error opening file '%s'",filename);
+   snprintf(mesg,sizeof(mesg),"Error opening file '%s'",filename);
    fprintf(stderr,"\n");
    perror(mesg);
    fprintf(stderr,"\n");
@@ -338,7 +365,7 @@ if (outfile == NULL)
 sretval = fwrite(headerstart, (headerend-headerstart)+1, 1, outfile);
 if (sretval == 0)
    {
-   sprintf(mesg,"Error writing file '%s'",filename);
+   snprintf(mesg,sizeof(mesg),"Error writing file '%s'",filename);
    fprintf(stderr,"\n");
    perror(mesg);
    fprintf(stderr,"\n");
@@ -352,7 +379,7 @@ if (!huffmanflag)
    sretval = fwrite(hufftbl, HUFFSIZE, 1, outfile);
    if (sretval == 0)
       {
-      sprintf(mesg,"Error writing file '%s'",filename);
+      snprintf(mesg,sizeof(mesg),"Error writing file '%s'",filename);
       fprintf(stderr,"\n");
       perror(mesg);
       fprintf(stderr,"\n");
@@ -365,7 +392,7 @@ if (!huffmanflag)
 sretval = fwrite(headerend+1, dataend-headerend, 1, outfile);
 if (sretval == 0)
    {
-   sprintf(mesg,"Error writing file '%s'",filename);
+   snprintf(mesg,sizeof(mesg),"Error writing file '%s'",filename);
    fprintf(stderr,"\n");
    perror(mesg);
    fprintf(stderr,"\n");
@@ -382,7 +409,7 @@ USCH *forward_scan(USCH *start, USCH *stop, USCH *goal, int length)
 USCH *i;
 int j, flag;
 
-for (i=start; i<stop; i++)
+for (i=start; (stop - i) >= (length - 1) && i<stop; i++)
    {
    if (*i != *goal) continue;
    else
